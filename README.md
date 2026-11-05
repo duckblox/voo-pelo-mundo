@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/34453684/README.md)
 # ✈️ Voo pelo Mundo
 
 > **Decole do Brasil. Descubra o mundo.**
@@ -18,9 +19,15 @@ Na tela inicial:
 3. Aperte **✈️ DECOLAR** e acompanhe o voo. Não há pontos, tempo nem erro: é só olhar, ouvir e descobrir.
 
 ## 🌍 Destinos
-Rio de Janeiro ↔ **Nova York** (EUA), **Paris** (França), **Moscou** (Rússia), **Tóquio** (Japão), **Cairo** (Egito), **Roma** (Itália), **Sydney** (Austrália) e **Dubai** (Emirados Árabes).
+Rio de Janeiro ↔ **Nova York** (EUA), **Paris** (França), **Londres** (Reino Unido), **Lisboa** (Portugal), **Buenos Aires** (Argentina), **Roma** (Itália), **Moscou** (Rússia), **Cairo** (Egito), **Cidade do Cabo** (África do Sul), **Dubai** (Emirados Árabes), **Nova Délhi** (Índia), **Pequim** (China), **Tóquio** (Japão) e **Sydney** (Austrália).
 
-Ao pousar, um cartão mostra a **bandeira**, o aeroporto, a capital, o continente, o monumento famoso, curiosidades e quantos quilômetros foram voados.
+Ao pousar, um cartão mostra a **bandeira**, o aeroporto, a capital, o continente, o monumento famoso, curiosidades, quantos quilômetros foram voados e **por onde o avião passou**. Em seguida vem um **quiz rápido em português e inglês** (continente e capital), sem nota e sem erro: se a resposta não for a certa, o jogo só mostra a correta.
+
+## 🧊 Rotas seguras (e a Antártida)
+Os aviões comerciais escolhem caminhos com **aeroportos por perto**, para o caso de uma emergência. Por isso quase nenhuma rota passa pela Antártida, onde há pouquíssimos aeroportos.
+- Em linha reta, o Rio → Sydney passaria bem em cima da Antártida. No jogo, o voo faz **escala na África do Sul** e contorna o continente gelado.
+- No globo, os **pontos amarelos 🟡** são aeroportos de emergência perto da rota.
+- Durante o voo, o jogo avisa em inglês e português: *"Safe route: planes avoid Antarctica"*.
 
 ## 🎥 8 câmeras (teclas **1** a **8**)
 | Tecla | Câmera | O que mostra |
@@ -36,7 +43,7 @@ Ao pousar, um cartão mostra a **bandeira**, o aeroporto, a capital, o continent
 
 ## 🧭 Aprendendo no caminho
 - **Continentes e oceanos:** o nome aparece no alto da tela conforme o avião sobrevoa.
-- **Países:** mais de 40 países aparecem no caminho, com a capital e a bandeira dos principais.
+- **Países:** mais de 40 países aparecem no caminho, com a capital e a bandeira dos principais, e no fim você vê a lista do que sobrevoou.
 - **Altitude e velocidade:** o painel mostra altitude em metros e em pés, velocidade em km/h e quanto falta.
 - **Inglês sem pressão:** frases curtas aparecem em **inglês e português** ("Takeoff! / Decolando!").
 - **Pouso de verdade:** a voz do avião conta a altura até o chão ("One thousand, five hundred… fifty, forty, thirty, twenty, ten… retard"), com o número grande na tela e a tradução embaixo.
@@ -60,7 +67,8 @@ Vem ligado por padrão: sem tremor de câmera nem balanço, para uma viagem tran
 
 ## 🛠️ Para quem quer aprender a programar
 O `index.html` é um único arquivo. O script é dividido em seções marcadas com comentários `/* ---------- ... ---------- */` (bandeiras, destinos, mapa, voz e áudio, perfil de voo, cenários 2D, viagem e laço principal). Comece por estes valores:
-- `DS`: a lista de destinos (cidade, aeroporto, coordenadas, monumento e curiosidades). Copie um bloco para criar um destino novo.
+- `DS`: a lista de destinos (cidade, aeroporto, coordenadas, monumento e curiosidades). Copie um bloco para criar um destino novo. O campo `via` cria uma rota com escala (lista de coordenadas).
+- `EA`: os aeroportos de emergência mostrados como pontos amarelos no globo.
 - `FG`: as bandeiras, desenhadas em SVG com formas simples.
 - `PG`: os polígonos dos continentes (longitude e latitude).
 - `CNT`: os países citados durante o voo (nome, posição e capital).
