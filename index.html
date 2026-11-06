@@ -25,6 +25,7 @@ button{font:inherit;font-size:18px;padding:12px 24px;border-radius:14px;border:0
 .bt{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.bt button{font-size:14px;padding:8px 12px;background:#1b3a6b;color:#fff}
 .sn{display:flex;flex-direction:column;align-items:center}.sp.big{width:150px;background:#fffd;animation:stp .6s cubic-bezier(.2,1.6,.4,1) both}
 @keyframes stp{0%{transform:scale(3) rotate(-25deg);opacity:0}60%{opacity:1}100%{transform:scale(1) rotate(-6deg)}}
+#acams{display:none;position:fixed;left:50%;bottom:12px;transform:translateX(-50%);gap:6px;z-index:4}#acams button{white-space:nowrap;font-size:14px;padding:8px 10px;background:#fff;color:#102}#acams button.on{background:var(--ac)}@media(max-width:760px){#acams .l{display:none}#acams button{padding:8px 9px!important;font-size:13px!important}}
 #hud{position:fixed;left:50%;bottom:74px;transform:translateX(-50%);display:flex;gap:18px;background:#000b;border:2px solid var(--ac);border-radius:14px;padding:8px 18px;font-family:monospace;font-size:15px;text-align:center;z-index:3;white-space:nowrap}
 #hud b{display:block;font-size:22px;color:#7dff9a}
 #cams{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;z-index:4}
@@ -45,7 +46,7 @@ button{font:inherit;font-size:18px;padding:12px 24px;border-radius:14px;border:0
 <canvas id="gl"></canvas><canvas id="sc"></canvas>
 <div class="h" id="tl"></div><div class="h" id="loc"></div><div class="h" id="big"></div><div class="h" id="sub"></div>
 <div id="hud"><div>ALTITUDE<b id="ha">0</b><span id="hf"></span></div><div>VELOCIDADE<b id="hs">0</b>km/h</div><div>FALTAM<b id="hd">0</b>km</div></div>
-<div id="cams"></div>
+<div id="cams"></div><div id="acams"></div>
 <button class="b2" id="mu" style="right:14px">🔊</button><button class="b2" id="mm" style="right:64px">🎵 Música</button><button class="b2" id="cg" style="right:160px">⚙️</button><button class="b2" id="hm" style="right:208px">🏠 Início</button>
 <div id="pp"></div><div id="cf"><b>⚙️ Configurações</b><label>🗣️ Volume da voz<input type="range" id="v_voice" min="0" max="100" value="90"></label><label>🎵 Volume da música<input type="range" id="v_mus" min="0" max="100" value="50"></label><label>✈️ Volume do motor<input type="range" id="v_fx" min="0" max="100" value="50"></label><label>🌅 Ciclo do dia<select id="tod2" style="width:100%;font-size:15px;padding:6px"><option value="std">Amanhecer → pôr do sol</option><option value="dusk">Dia → Noite (anoitecer)</option><option value="dawn">Noite → Dia (amanhecer)</option><option value="day">Sempre dia</option><option value="night">Sempre noite</option></select></label><label>🎶 Estilo da música<select id="msty" style="width:100%;font-size:15px;padding:6px"><option value="fun">Alegre (viagem)</option><option value="calm">Calma</option></select></label><label><input type="checkbox" id="ca2"> Modo calmo (sem tremor)</label><button id="vt" style="font-size:16px;padding:10px 16px;background:#fff">🔔 Testar voz</button> <button id="cfx" style="font-size:16px;padding:10px 16px">Fechar</button></div>
 <div id="ar"><div class="box" id="arb"></div></div>
@@ -166,6 +167,15 @@ function vol(){if(mg)mg.gain.value=M.mus?M.m:0}
 /* ---------- perfil de voo ---------- */
 const KP=[[0,1000],[6,500],[10,100],[11.2,50],[12.2,40],[13.2,30],[14.2,20],[15.2,10],[16,0]];
 function ftAt(u){for(let i=1;i<KP.length;i++)if(u<=KP[i][0]){const a=KP[i-1],b=KP[i];return a[1]+(b[1]-a[1])*(u-a[0])/(b[0]-a[0])}return 0}
+function remKm(s){const D=dist,c=Math.max(31,(D-497.2)/45),tD=T-36;
+if(s<=8)return D;
+if(s<=14){const u=(s-8)/6;return D-c*6*(u*u*u-u*u*u*u/2)}
+const d1=c*3;if(s<=T-52)return D-d1-c*(s-14);
+const dm=d1+c*(T-52-14),x=s-(T-52),L=16,u=x/L;
+if(s<=tD)return D-dm-(c*x+(30.9-c)*L*(u*u*u-u*u*u*u/2));
+if(s<=T-20){const t=(s-tD)/16;return 3+247*(1-t)*(1-t)}
+if(s<=T-4)return 3*(1-sm((s-(T-20))/16));
+return 0}
 function prof(s){let a,v,p=0;
 if(s<8){a=0;v=290*Math.pow(s/8,1.3);p=sm((s-5.5)/2.5)*.12}
 else if(s<26){const k=Math.pow(sm((s-8)/18),1.6);a=11000*k;v=290+610*k;p=.12*(1-sm((s-8)/18))}
@@ -377,14 +387,15 @@ if(lift<.5){g.fillStyle='rgba(0,0,0,'+(.35*(1-lift*2))+')';g.beginPath();g.ellip
 jetF(g,cx,cy,u,M.calm?0:Math.sin(s*.5)*.03,(ALT<3500&&s>T-38)||s<18);g.fillStyle='#fff';g.font='bold '+(H*.03|0)+'px system-ui';g.textAlign='left';g.fillText('🛬 Câmera frontal · Front view',14,H*.2)}
 function scene(){c2.clearRect(0,0,W,H);c2.save();c2.translate(0,sh());({1:cockpit,2:cabin,3:aisle,5:wing,6:ext,7:lat,8:front})[cm]();{const N=SUN().N;if(N>0&&cm!=1&&cm!=5){c2.fillStyle='rgba(6,10,34,'+N*(cm<4?.32:.16)+')';c2.fillRect(0,-4,W,H+8)}}c2.restore()}
 /* ---------- viagem ---------- */
-let PLL=[0,0],dist=0,pickedD=DS[1],lastLoc=0;
-function pick(d){pickedD=d;document.querySelectorAll('.cd').forEach(e=>e.classList.toggle('on',e.dataset.k==d.k))}
-DS.slice(1).forEach(d=>{const e=document.createElement('div');e.className='cd';e.dataset.k=d.k;e.innerHTML=flag(d.k)+'<br><b>'+d.n+'</b><small>'+d.c+'</small>';e.onclick=()=>pick(d);$('ds').appendChild(e)});pick(DS[1]);
+let APM=0,AM=0,ac=1,at=0,AX=0,ABE=0,APA=0,PLL=[0,0],dist=0,pickedD=DS[1],lastLoc=0;
+function pick(d){APM=0;$('go').textContent='✈️ DECOLAR';pickedD=d;document.querySelectorAll('.cd').forEach(e=>e.classList.toggle('on',e.dataset.k==d.k))}
+DS.slice(1).forEach(d=>{const e=document.createElement('div');e.className='cd';e.dataset.k=d.k;e.innerHTML=flag(d.k)+'<br><b>'+d.n+'</b><small>'+d.c+'</small>';e.onclick=()=>pick(d);$('ds').appendChild(e)});const ec=document.createElement('div');ec.className='cd';ec.dataset.k='APT';ec.innerHTML='<div style="font-size:34px;height:43px;line-height:43px">🏢</div><br><b>Aeroporto</b><small>Airport view</small>';ec.onclick=()=>{APM=1;$('go').textContent='🏢 ENTRAR NO AEROPORTO';document.querySelectorAll('.cd').forEach(e=>e.classList.toggle('on',e===ec))};$('ds').appendChild(ec);pick(DS[1]);
 $('d0').onclick=()=>{dir=0;$('d0').style.opacity=1;$('d1').style.opacity=.6};$('d1').onclick=()=>{dir=1;$('d1').style.opacity=1;$('d0').style.opacity=.6};
 ['🧑‍✈️ 1 Cabine de comando','🪑 2 Passageiros','🛒 3 Corredor','🌍 4 Globo','🪟 5 Asa','🛩️ 6 Externa','↔️ 7 Lateral','🛬 8 Frontal'].forEach((t,i)=>{const b=document.createElement('button');b.innerHTML=t.replace(/^(\S+ \d) (.*)$/,'$1<span class="l"> $2</span>');b.onclick=()=>setCam(i+1);b.id='c'+(i+1);$('cams').appendChild(b)});
+['🛫 1 Pátio','🚜 2 Pushback','🛗 3 Escada rolante','🛍️ 4 Lojas','🚶 5 Ponte de embarque'].forEach((t,i)=>{const b=document.createElement('button');b.innerHTML=t.replace(/^(\S+ \d) (.*)$/,'$1<span class="l"> $2</span>');b.onclick=()=>setAcam(i+1);b.id='a'+(i+1);$('acams').appendChild(b)});
 function setCam(k){cm=k;gl.style.display=k==4?'block':'none';sc.style.display=k==4?'none':'block';for(let i=1;i<=8;i++)$('c'+i).classList.toggle('on',i==k)}
 function big(t,pt){$('big').innerHTML=t+(pt?'<small style="display:block;font-size:.22em;color:#fff">'+pt+'</small>':'');$('big').style.opacity=1;clearTimeout(big.t);big.t=setTimeout(()=>$('big').style.opacity=0,1200)}
-function start(){DX=0;PH=0;audio();A=dir?pickedD:BRA;B=dir?BRA:pickedD;dest=B;s=0;EV={};VIS=[];prevC='';prevK='';CALL=0;vv=B.via?B.via:A.via?A.via.slice().reverse():[];run=1;land=1;M.mus=$('mus').checked;M.calm=$('ca').checked;vol();buildRoute();dist=ANG*6371;$('st').style.display='none';$('ar').style.display='none';setCam(1);
+function start(){if(APM){startAirport();return}DX=0;PH=0;audio();A=dir?pickedD:BRA;B=dir?BRA:pickedD;dest=B;s=0;EV={};VIS=[];prevC='';prevK='';CALL=0;vv=B.via?B.via:A.via?A.via.slice().reverse():[];run=1;land=1;M.mus=$('mus').checked;M.calm=$('ca').checked;vol();buildRoute();dist=ANG*6371;$('st').style.display='none';$('ar').style.display='none';setCam(1);
 $('tl').innerHTML='✈️ <b>'+A.c+' ('+A.i+') → '+B.c+' ('+B.i+')</b><br><span id="ph">Na pista, pronto para decolar</span><br><small>🟡 aeroportos de emergência / alternate airports</small>';window.speechSynthesis&&speechSynthesis.cancel();sub('Welcome aboard! Flight to '+B.c+'.','Bem-vindo a bordo! Voo para '+B.c+' · '+Math.round(dist).toLocaleString('pt-BR')+' km');say('Bem-vindo a bordo! Voo de '+A.c+' para '+B.c+'. Distância: '+Math.round(dist).toLocaleString('pt-BR')+' quilômetros. Aperte os cintos!','pt-BR');say('Welcome aboard! Please fasten your seat belts.','en-US')}
 $('go').onclick=start;
 function arrive(){run=0;$('ar').style.display='flex';$('arb').innerHTML='<div>'+flag(B.k)+'</div><h2>Bem-vindo a '+B.n+'!</h2>'+stampBlock()+'<p>🛬 <b>'+B.c+'</b> · '+B.ap+' ('+B.i+')</p><p>📍 Capital: <b>'+B.cap+'</b> · Continente: <b>'+where(ll(B.la,B.lo)).ct+'</b></p><p>🏛️ Ponto famoso: <b>'+B.ln+'</b></p>'+B.f.map(f=>'<p>💡 '+f+'</p>').join('')+'<p>🗺️ Você sobrevoou: <b>'+VIS.slice(0,14).join(' → ')+'</b></p>'+(vv.length?'<p>🧊 <b>Você sabia?</b> Em linha reta, esta rota passaria perto da Antártida. Mas os aviões escolhem caminhos com aeroportos por perto, para o caso de uma emergência. Por isso o voo passa pela África do Sul.<br><small><i>Planes avoid Antarctica: there are almost no emergency airports there.</i></small></p>':'<p>🟡 Os pontos amarelos do globo são aeroportos de emergência perto da rota.<br><small><i>Yellow dots = alternate airports.</i></small></p>')+'<p>🛫 Você voou cerca de <b>'+Math.round(dist).toLocaleString('pt-BR')+' km</b> (em um avião de verdade, ~'+Math.round(dist/850)+' horas).</p><div id="qz"></div><button id="again">✈️ Voo de volta / outro destino</button> <button id="pass2" style="background:#fff">🛂 Passaporte</button> <button id="gohm" style="background:#fff">🏠 Início</button>';
@@ -410,16 +421,76 @@ $('pp').style.display='block';avatar($('pav'),o.id);$('pnew').onclick=()=>{o.id=
 function quiz(){const q=$('qz');let st=0;const co=where(ll(B.la,B.lo)).ct,CTL=['América do Norte','América do Sul','Europa','África','Ásia','Oceania'],sh=a=>a.sort(()=>Math.random()-.5);
 const Q=[['Em que continente fica '+B.n+'?','Which continent is '+B.n+' in?',co,sh(CTL.filter(x=>x!=co)).slice(0,2)],['Qual é a capital de '+B.n+'?','What is the capital of '+B.n+'?',B.cap,sh([...new Set(DS.map(d=>d.cap))].filter(x=>x!=B.cap)).slice(0,2)]];
 const show=()=>{if(st>=Q.length){q.innerHTML='<p>🌟 <b>Muito bem! / Well done!</b></p>';return}const[p,e,ok,bad]=Q[st];q.innerHTML='<p><b>🧠 '+p+'</b><br><small><i>'+e+'</i></small></p>';say(p);say(e,'en-US');sh([ok,...bad]).forEach(o=>{const b=document.createElement('button');b.textContent=o;b.style.cssText='font-size:15px;padding:8px 12px;margin:3px;background:#fff';b.onclick=()=>{q.innerHTML='<p>'+(o==ok?'✅ <b>Isso! / Correct!</b>':'💡 A resposta é / The answer is: <b>'+ok+'</b>')+'</p>';setTimeout(()=>{st++;show()},1600)};q.appendChild(b)})};show()}
-function home(){run=0;speechSynthesis&&speechSynthesis.cancel();$('ar').style.display='none';$('cf').style.display='none';$('st').style.display='flex';land=1}
+function home(){run=0;AM=0;$('hud').style.display='';$('cams').style.display='';$('acams').style.display='none';if(eg)eg.gain.value=0;speechSynthesis&&speechSynthesis.cancel();$('ar').style.display='none';$('cf').style.display='none';$('st').style.display='flex';land=1}
 $('hm').onclick=home;$('tod').onchange=e=>{M.tod=e.target.value;$('tod2').value=M.tod};$('tod2').onchange=e=>{M.tod=e.target.value;$('tod').value=M.tod};$('msty').onchange=e=>{M.sty=e.target.value};$('pp0').onclick=openPass;$('vt').onclick=$('vt2').onclick=()=>{say('Olá! A voz está funcionando.','pt-BR',true);say('Hello! The voice is working.','en-US')};vstat();$('cg').onclick=()=>$('cf').style.display='block';$('cfx').onclick=()=>$('cf').style.display='none';
 $('v_voice').oninput=e=>M.v=e.target.value/100;$('v_mus').oninput=e=>{M.m=e.target.value/100;vol()};$('v_fx').oninput=e=>M.f=e.target.value/100;$('ca2').onchange=e=>M.calm=e.target.checked;
 $('mm').onclick=()=>{audio();M.mus=!M.mus;vol();$('mm').textContent=M.mus?'🎵 Música':'🎵 ✕'};$('mu').onclick=()=>{M.v=M.v?0:.9;$('mu').textContent=M.v?'🔊':'🔇'};
-addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='8')setCam(+e.key)});
+addEventListener('keydown',e=>{if(e.key>='1'&&e.key<='8'){AM?(+e.key<=5&&setAcam(+e.key)):setCam(+e.key)}});
 function res(){W=sc.width=innerWidth;H=sc.height=innerHeight;rd.setSize(innerWidth,innerHeight,false);cam.aspect=W/H;cam.updateProjectionMatrix()}addEventListener('resize',res);res();
+/* ---------- modo aeroporto ---------- */
+const PC=['#e04b4b','#3a7bd5','#2fa36b','#f0a030','#8e5bd9','#e9e9e9','#2b3550'],PS=['#f1c9a5','#d9a06f','#b9774a','#8a5634','#5e3b24'],PH2=['#2a1a10','#6b4a2a','#b5651d','#1a1a1a','#d9a441','#a0301c'];
+function pr(c,x,y,h,i,ph,bag){const u=h/100,sw=Math.sin(ph)*9*u,col=PC[(hs(i)*PC.length)|0],sk=PS[(hs(i,1)*PS.length)|0],hr=PH2[(hs(i,2)*PH2.length)|0];c.fillStyle='#2b3550';c.fillRect(x-9*u+sw,y-40*u,8*u,40*u);c.fillRect(x+1*u-sw,y-40*u,8*u,40*u);c.fillStyle=col;rr(c,x-12*u,y-77*u,24*u,40*u,6*u);c.fill();c.fillStyle=sk;c.beginPath();c.arc(x,y-87*u,9*u,0,7);c.fill();c.fillStyle=hr;c.beginPath();c.arc(x,y-90*u,9.5*u,PI,0);c.fill();if(bag){c.fillStyle=bag;rr(c,x+11*u,y-46*u,15*u,24*u,3*u);c.fill()}}
+const BG2=['#e04b4b','#3a7bd5','#f0a030','#2fa36b','#8e5bd9'];
+function sky2(g,y1){const q=g.createLinearGradient(0,0,0,y1);q.addColorStop(0,'#4aa3ea');q.addColorStop(1,'#dff1ff');g.fillStyle=q;g.fillRect(0,0,W,y1+2)}
+function apBG(g,hz,u,sx){sky2(g,hz);for(let i=0;i<6;i++)puff(g,((hs(i)*W*2-at*8*(1+i%3)-sx*.1)%(W*1.5)+W*1.5)%(W*1.5)-W*.2,hz*(.15+.5*hs(i,2)),40+hs(i,3)*50,.85);
+const tp=2300*u,tx=(((900*u-sx*.9)%tp)+tp)%tp;g.fillStyle='#c9ced6';g.fillRect(tx-14*u,hz-250*u,28*u,250*u);pl(g,[[tx-48*u,hz-250*u],[tx+48*u,hz-250*u],[tx+34*u,hz-300*u],[tx-34*u,hz-300*u]],'#6e8aa3');g.fillStyle='#37495d';g.fillRect(tx-46*u,hz-250*u,92*u,8*u);
+g.fillStyle='#b7c3d0';g.fillRect(0,hz-110*u,W,110*u);const wp=100*u;for(let i=-1;i<W/wp+2;i++){const x=i*wp-(((sx%wp)+wp)%wp);g.fillStyle='#8fb5d6';g.fillRect(x+6*u,hz-96*u,wp-12*u,58*u);g.fillStyle='#e7edf3';g.fillRect(x,hz-110*u,3*u,110*u)}g.fillStyle='#e7edf3';g.fillRect(0,hz-118*u,W,10*u);
+const q=g.createLinearGradient(0,hz,0,H);q.addColorStop(0,'#8a919b');q.addColorStop(1,'#5b616b');g.fillStyle=q;g.fillRect(0,hz,W,H-hz);g.strokeStyle='#f2c200';g.lineWidth=4*u;g.setLineDash([70*u,50*u]);g.lineDashOffset=sx;[hz+60*u,hz+150*u].forEach(yy=>{g.beginPath();g.moveTo(0,yy);g.lineTo(W,yy);g.stroke()});g.setLineDash([])}
+function jetDir(g,x,y,sc,dir,k){g.save();g.translate(x,y);g.scale(dir,1);jetS(g,0,0,sc,0,true,k);g.restore()}
+function a1(){const g=c2,u=Math.min(W/900,H/700),hz=H*.46,sc=Math.min(W/1500,H/900);apBG(g,hz,u,0);
+const pa=W*.74,yg=hz+70*u,py=yg-108*sc,doorX=pa-235*sc,doorY=py-6*sc,fx=W*.34;
+pl(g,[[fx,hz-80*u],[fx,hz-30*u],[doorX,doorY+22*sc],[doorX,doorY-22*sc]],'#d5dae1');g.fillStyle='#9fb6cc';g.fillRect(fx+10*u,hz-62*u,Math.max(0,doorX-fx-20*u),12*u);g.fillStyle='#6b7684';g.fillRect((fx+doorX)/2,doorY+10*sc,8*u,yg-doorY-10*sc);g.fillStyle='#222';g.beginPath();g.arc((fx+doorX)/2+4*u,yg-5*u,8*u,0,7);g.fill();
+jetDir(g,pa,py,sc,-1,DS[2].k);
+const bx=W*1.15-((at*38*u)%(W*1.5));g.fillStyle='#e0a030';rr(g,bx,yg+20*u,50*u,26*u,5*u);g.fill();for(let i=1;i<4;i++){g.fillStyle='#8f98a4';g.fillRect(bx+i*62*u,yg+26*u,54*u,20*u);g.fillStyle=BG2[i];g.fillRect(bx+i*62*u+6*u,yg+14*u,20*u,12*u)}g.fillStyle='#222';for(let i=0;i<4;i++){g.beginPath();g.arc(bx+10*u+i*62*u,yg+48*u,6*u,0,7);g.fill()}
+const xf=((at*52*u)%(W+900*sc))-450*sc;jetDir(g,xf,hz+205*u-108*sc*1.15,sc*1.15,1,DS[5].k);
+const xs=W+200*sc-((at*30*u)%(W+700*sc));jetDir(g,xs,hz+32*u-108*sc*.45,sc*.45,-1,DS[8].k);
+pr(g,doorX-40*u,yg+4*u,70*u,3,at*4,0);pr(g,doorX+100*u,yg+10*u,68*u,5,at*5+2,0)}
+function a2(){const g=c2,u=Math.min(W/900,H/700),hz=H*.46,sc=Math.min(W/1500,H/900),sx=AX*70*u,cx=W*.56,yg=hz+115*u,py=yg-108*sc;apBG(g,hz,u,sx);
+g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(cx,yg+8*u,300*sc,16*u,0,0,7);g.fill();jetDir(g,cx,py,sc,-1,DS[3].k);
+const nx=cx-150*sc,tx=nx-150*sc;g.strokeStyle='#444';g.lineWidth=7*sc;g.beginPath();g.moveTo(tx+60*sc,yg-20*sc);g.lineTo(nx,yg-14*sc);g.stroke();
+g.fillStyle='#e8a317';rr(g,tx-70*sc,yg-62*sc,150*sc,44*sc,10*sc);g.fill();g.fillStyle='#2f3946';rr(g,tx-10*sc,yg-100*sc,70*sc,42*sc,8*sc);g.fill();g.fillStyle='#9ad0ff';g.fillRect(tx-2*sc,yg-92*sc,54*sc,24*sc);g.fillStyle='#222';[-40,50].forEach(o=>{g.beginPath();g.arc(tx+o*sc,yg-16*sc,22*sc,0,7);g.fill()});
+if(Math.sin(at*9)>0){g.fillStyle='#ffb100';g.beginPath();g.arc(tx+25*sc,yg-108*sc,8*sc,0,7);g.fill();g.fillStyle='rgba(255,177,0,.35)';g.beginPath();g.arc(tx+25*sc,yg-108*sc,24*sc,0,7);g.fill()}
+g.fillStyle='#fff';g.fillRect(tx-74*sc,yg-50*sc,6*sc,14*sc);g.font='bold '+(26*u|0)+'px system-ui';g.textAlign='center';g.fillStyle='#fff';if(Math.floor(at*2)%2==0)g.fillText('BEEP! BEEP!',tx-10*sc,yg-130*sc);
+pr(g,tx+170*sc,yg+14*u,72*u,1,at*6,0);g.fillStyle='#ff7a00';g.fillRect(tx+196*sc,yg-60*u,5*u,44*u);pr(g,cx+170*sc,yg+22*u,66*u,4,at*6+1,0)}
+function a3(){const g=c2,u=Math.min(W/900,H/900);let q=g.createLinearGradient(0,0,0,H);q.addColorStop(0,'#eaf0f6');q.addColorStop(1,'#cfd8e2');g.fillStyle=q;g.fillRect(0,0,W,H);g.fillStyle='#b8c3d0';g.fillRect(0,0,W,H*.1);g.fillStyle='#fff';for(let i=0;i<8;i++)g.fillRect(W*(.05+i*.12),H*.04,W*.08,6*u);
+g.fillStyle='#1b3a6b';rr(g,W*.58,H*.14,W*.38,H*.09,10);g.fill();g.fillStyle='#fff';g.font='bold '+(Math.min(H*.032,26))+'px system-ui';g.textAlign='center';g.fillText('↑ PORTÕES · GATES',W*.77,H*.2);g.fillStyle='#2b7a3d';rr(g,W*.58,H*.25,W*.38,H*.09,10);g.fill();g.fillStyle='#fff';g.fillText('LOJAS · SHOPS',W*.77,H*.31);
+g.fillStyle='#aeb9c7';g.fillRect(0,H*.9,W,H*.1);
+const th=.5,L=Math.min(W*.8,H*.95),x0=W*.08,y0=H*.88,C=Math.cos(th),S=Math.sin(th);
+[[0,1],[150*u,-1]].forEach(([off,dir],ln)=>{g.save();g.translate(x0+off,y0);g.rotate(-th);g.fillStyle='#7d8794';g.fillRect(0,0,L*.95,34*u);g.fillStyle='#3c424b';g.fillRect(0,-8*u,L*.95,10*u);g.strokeStyle='#cfd6de';g.lineWidth=3*u;const sw=26*u,o=(((at*45*u*dir)%sw)+sw)%sw;for(let x=-sw;x<L*.95;x+=sw){const xx=x+o;if(xx>0&&xx<L*.95){g.beginPath();g.moveTo(xx,-8*u);g.lineTo(xx,2*u);g.stroke()}}g.restore();
+for(let i=0;i<3;i++){const t=(((i/3+at*.05*dir)%1)+1)%1,X=t*L*.9,px=x0+off+X*C+(-8*u)*S,py=y0-X*S+(-8*u)*C;pr(g,px,py,88*u,i+ln*5+2,0,i==1?'#2b7a3d':null)}
+g.save();g.translate(x0+off,y0);g.rotate(-th);g.fillStyle='rgba(180,220,255,.3)';g.fillRect(0,-84*u,L*.95,76*u);g.strokeStyle='#202020';g.lineWidth=8*u;g.beginPath();g.moveTo(0,-86*u);g.lineTo(L*.95,-86*u);g.stroke();g.restore()});
+g.font='bold '+(Math.min(H*.03,24))+'px system-ui';g.fillStyle='#2b3550';g.textAlign='left';g.fillText('🛗 Escada rolante · Escalator',W*.04,H*.07)}
+function a4(){const g=c2,u=Math.min(W/900,H/900);let q=g.createLinearGradient(0,0,0,H);q.addColorStop(0,'#f3efe6');q.addColorStop(1,'#dcd6c8');g.fillStyle=q;g.fillRect(0,0,W,H);g.fillStyle='#d9dde3';g.fillRect(0,0,W,H*.09);
+const bw=W*.84,bx=W*.08,by=H*.11,bh=H*.2;g.fillStyle='#0a1020';rr(g,bx,by,bw,bh,10);g.fill();g.font='bold '+(Math.min(H*.022,18)|0)+'px monospace';g.textAlign='left';g.fillStyle='#ffb454';g.fillText('HORA/TIME   DESTINO/DESTINATION      PORTÃO/GATE   STATUS',bx+bw*.03,by+bh*.17);
+const idx=Math.floor(at/5),ST=['EMBARQUE · BOARDING','NO HORÁRIO · ON TIME','ÚLTIMA CHAMADA · FINAL CALL'],SC=['#7dff9a','#fff','#ff6a5a'];
+for(let r=0;r<3;r++){const d=DS[(idx+r*4)%DS.length],yy=by+bh*(.4+r*.27);g.fillStyle='#fff';g.font='bold '+(Math.min(H*.03,24)|0)+'px monospace';g.fillText((10+r)+':'+(r*15+10),bx+bw*.03,yy);const fw=bw*.05,fh=fw*.67;try{if(FI[d.k]&&FI[d.k].complete)g.drawImage(FI[d.k],bx+bw*.17,yy-fh*.85,fw,fh)}catch(e){}g.fillText(d.c,bx+bw*.24,yy);g.fillText('ABCD'[(idx+r)%4]+(r*3+4),bx+bw*.56,yy);g.fillStyle=SC[(r+idx)%3];g.font='bold '+(Math.min(H*.022,17)|0)+'px system-ui';g.fillText(ST[(r+idx)%3],bx+bw*.7,yy)}
+const SH=[['BRINQUEDOS · TOYS','#e04b4b','🧸🎈🚂'],['CAFÉ · COFFEE','#8a5a34','☕🥐🍪'],['LIVROS · BOOKS','#2f6fb5','📚🗺️✏️'],['DUTY FREE','#2b7a3d','🍫🧴🎁']],sw=W*.21;
+SH.forEach((s,i)=>{const x=W*.045+i*(sw+W*.02),y=H*.37;g.fillStyle=s[1];rr(g,x,y,sw,H*.4,10);g.fill();g.fillStyle='#fff';g.font='bold '+(Math.min(H*.024,19)|0)+'px system-ui';g.textAlign='center';g.fillText(s[0],x+sw/2,y+H*.045);g.fillStyle='#fff9d8';rr(g,x+sw*.08,y+H*.07,sw*.84,H*.2,8);g.fill();g.font=(Math.min(H*.055,44)|0)+'px serif';g.fillText(s[2],x+sw/2,y+H*.18);g.fillStyle='rgba(0,0,0,.25)';g.fillRect(x+sw*.3,y+H*.29,sw*.4,H*.11)});
+g.fillStyle='#c4c8cf';g.fillRect(0,H*.78,W,H*.22);g.fillStyle='rgba(255,255,255,.35)';for(let i=0;i<10;i++)g.fillRect(0,H*.78+i*H*.022,W,2);
+for(let i=0;i<7;i++){const dir=i%2?1:-1,x=(((i*W/7+dir*at*22*u)%(W+160))+W+160)%(W+160)-80;pr(g,x,H*.84,62*u,i+11,at*5+i,i%3==0?'#8e5bd9':null)}
+for(let i=0;i<4;i++){const dir=i%2?-1:1,x=(((i*W/4+dir*at*46*u)%(W+240))+W+240)%(W+240)-120;pr(g,x,H*.99,104*u,i+31,at*7+i,i%2?'#e04b4b':'#2b3550')}}
+function a5(){const g=c2,vx=W/2,vy=H*.44,k=H*.7,X=(x,z)=>vx+x*k/z,Y=(y,z)=>vy+y*k/z,z0=.9,z1=14;g.fillStyle='#9aa3b0';g.fillRect(0,0,W,H);
+pl(g,[[X(-.9,z0),Y(-.8,z0)],[X(.9,z0),Y(-.8,z0)],[X(.9,z1),Y(-.8,z1)],[X(-.9,z1),Y(-.8,z1)]],'#e6e9ee');pl(g,[[X(-.9,z0),Y(.9,z0)],[X(.9,z0),Y(.9,z0)],[X(.9,z1),Y(.9,z1)],[X(-.9,z1),Y(.9,z1)]],'#5b6270');
+pl(g,[[X(-.9,z0),Y(-.8,z0)],[X(-.9,z1),Y(-.8,z1)],[X(-.9,z1),Y(.9,z1)],[X(-.9,z0),Y(.9,z0)]],'#cfd5dd');pl(g,[[X(.9,z0),Y(-.8,z0)],[X(.9,z1),Y(-.8,z1)],[X(.9,z1),Y(.9,z1)],[X(.9,z0),Y(.9,z0)]],'#cfd5dd');
+pl(g,[[X(-.06,z0),Y(.9,z0)],[X(.06,z0),Y(.9,z0)],[X(.06,z1),Y(.9,z1)],[X(-.06,z1),Y(.9,z1)]],'#f2c200');
+for(let z=1.2;z<z1;z+=1.3){pl(g,[[X(-.9,z),Y(-.8,z)],[X(-.9,z+.5),Y(-.8,z+.5)],[X(-.9,z+.5),Y(.2,z+.5)],[X(-.9,z),Y(.2,z)]],'#9fd0ff');pl(g,[[X(-.1,z),Y(-.8,z)],[X(.1,z),Y(-.8,z)],[X(.1,z+.4),Y(-.8,z+.4)],[X(-.1,z+.4),Y(-.8,z+.4)]],'#fffbe6')}
+g.strokeStyle='#a6aebb';g.lineWidth=3;for(let z=1.2;z<z1;z+=.65){g.beginPath();g.moveTo(X(-.9,z),Y(.9,z));g.lineTo(X(-.9,z),Y(-.8,z));g.lineTo(X(.9,z),Y(-.8,z));g.lineTo(X(.9,z),Y(.9,z));g.stroke()}
+g.fillStyle='#2d3a52';g.fillRect(X(-.5,z1),Y(-.7,z1),X(.5,z1)-X(-.5,z1),Y(.9,z1)-Y(-.7,z1));g.fillStyle='#e8d9b5';g.fillRect(X(-.5,z1),Y(-.7,z1),X(.5,z1)-X(-.5,z1),Y(-.55,z1)-Y(-.7,z1));
+attendant(g,X(0,z1-.1),Y(.9,z1-.1),1.6*k/(z1-.1),'#d13b3b');
+const L=[];for(let i=0;i<6;i++){const z=((i*2.1+AX*1.2)%12.6)+1.2;L.push([z,i])}L.sort((a,b)=>b[0]-a[0]);
+L.forEach(([z,i])=>{pr(g,X([-.4,0,.4][i%3],z),Y(.9,z),1.6*k/z,i+41,at*7+i*2,i%2?['#e04b4b','#3a7bd5','#2fa36b'][i%3]:null)});
+g.fillStyle='#0b1c3a';rr(g,W*.3,H*.04,W*.4,H*.07,10);g.fill();g.fillStyle='#ffb454';g.textAlign='center';g.font='bold '+(Math.min(H*.03,24)|0)+'px system-ui';g.fillText('PORTÃO / GATE B12 → '+DS[2].c.toUpperCase(),W/2,H*.088)}
+const AINFO=[['Apron: planes taxi to the gate.','Pátio: os aviões taxiam até o portão.'],['Pushback tug: it pushes the plane backward.','Trator de reboque: empurra o avião de ré.'],['Escalator: it goes up and down.','Escada rolante: sobe e desce.'],['Shops and the flight information board.','Lojas e o painel de voos.'],['Jet bridge: the tunnel to the plane.','Ponte de embarque: o túnel até o avião.']];
+function setAcam(k){ac=k;for(let i=1;i<=5;i++)$('a'+i).classList.toggle('on',i==k);const I=AINFO[k-1];sub(I[0],I[1]);say(I[0],'en-US',true);say(I[1])}
+function startAirport(){audio();M.mus=$('mus').checked;M.calm=$('ca').checked;vol();AM=1;at=0;AX=0;APA=10;$('st').style.display='none';$('ar').style.display='none';$('hud').style.display='none';$('cams').style.display='none';$('acams').style.display='flex';$('loc').innerHTML='';gl.style.display='none';sc.style.display='block';$('tl').innerHTML='🏢 <b>Aeroporto · Airport</b>';if(eg)eg.gain.value=.05*M.f;if(window.speechSynthesis)speechSynthesis.cancel();setAcam(1);say('Bem-vindo ao aeroporto!');say('Welcome to the airport!','en-US')}
+function aloop(dt){AX+=dt;c2.clearRect(0,0,W,H);c2.save();[0,a1,a2,a3,a4,a5][ac]();c2.restore();
+if(at>APA){APA=at+18;const d=DS[(Math.random()*DS.length)|0],gt='ABCD'[Math.random()*4|0]+(1+Math.random()*20|0);beep(880,.25,'sine',.12);setTimeout(()=>beep(660,.35,'sine',.12),260);setTimeout(()=>ann2('Flight to '+d.c+' now boarding at gate '+gt+'.','Voo para '+d.c+' embarcando no portão '+gt+'.'),700)}
+const bb=Math.floor(at*2);if(bb!=ABE){ABE=bb;if(ac==2)beep(1100,.12,'square',.03)}}
 /* ---------- laço principal ---------- */
 const FT=[[1000,'One thousand','Mil pés'],[500,'Five hundred','Quinhentos pés'],[100,'One hundred','Cem pés'],[50,'Fifty','Cinquenta pés'],[40,'Forty','Quarenta pés'],[30,'Thirty','Trinta pés'],[20,'Twenty','Vinte pés'],[10,'Ten','Dez pés']];let orb=0;
 function loop(){requestAnimationFrame(loop);const now=performance.now(),dt=Math.min(.05,loop.l?(now-loop.l)/1000:.016);loop.l=now;
-if(run){s+=dt;DX+=SPD*dt*.3;PH+=(.25+SPD/900*1.6)*dt;const o=prof(s);ALT=o.a;SPD=o.v;PIT=o.p;P=sm(Math.max(0,s-8)/(T-12));
+if(AM){at+=dt;aloop(dt);return}
+if(run){s+=dt;DX+=SPD*dt*.3;PH+=(.25+SPD/900*1.6)*dt;const o=prof(s);ALT=o.a;SPD=o.v;PIT=o.p;P=Math.min(1,Math.max(0,1-remKm(s)/dist));
 $('ha').textContent=Math.round(ALT).toLocaleString('pt-BR')+' m';$('hf').textContent=Math.round(ALT*3.281).toLocaleString('pt-BR')+' ft';$('hs').textContent=Math.round(SPD);$('hd').textContent=Math.round(dist*(1-P)).toLocaleString('pt-BR');
 $('ph').textContent=s<8?'🛫 Correndo na pista...':s<26?'⬆️ Decolou! Subindo':s<T-36?'☁️ Voo de cruzeiro':s<T-20?'⬇️ Iniciando a descida':s<T-4?'🛬 Aproximação final':s<T+4?'🛬 Tocou a pista!':'';
 if(s>8&&!EV.a){EV.a=1;ann2('Takeoff!','Decolando!');big('TAKEOFF!','DECOLAGEM!')}
