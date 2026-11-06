@@ -1,5 +1,4 @@
-[README.md](https://github.com/user-attachments/files/34453684/README.md)
-# ✈️ Voo pelo Mundo
+[README.md](https://github.com/user-attachments/files/34461201/README.md)
 
 > **Decole do Brasil. Descubra o mundo.**
 
@@ -22,6 +21,19 @@ Na tela inicial:
 Rio de Janeiro ↔ **Nova York** (EUA), **Paris** (França), **Londres** (Reino Unido), **Lisboa** (Portugal), **Buenos Aires** (Argentina), **Roma** (Itália), **Moscou** (Rússia), **Cairo** (Egito), **Cidade do Cabo** (África do Sul), **Dubai** (Emirados Árabes), **Nova Délhi** (Índia), **Pequim** (China), **Tóquio** (Japão) e **Sydney** (Austrália).
 
 Ao pousar, um cartão mostra a **bandeira**, o aeroporto, a capital, o continente, o monumento famoso, curiosidades, quantos quilômetros foram voados e **por onde o avião passou**. Em seguida vem um **quiz rápido em português e inglês** (continente e capital), sem nota e sem erro: se a resposta não for a certa, o jogo só mostra a correta.
+
+## 🏢 Visão do aeroporto
+Na tela inicial, o cartão **🏢 Aeroporto** leva a criança para dentro de um aeroporto, sem decolar. São 5 câmeras (teclas **1** a **5**), cada uma com uma frase em inglês e português e a voz dizendo o nome do que está vendo:
+
+| Tecla | Câmera | O que mostra |
+|---|---|---|
+| 1 | 🛫 Pátio | Aviões taxiando, a ponte de embarque no portão, o carrinho de bagagens e a torre de controle |
+| 2 | 🚜 Pushback | O trator de reboque empurrando o avião de ré, com luz piscando, "beep beep" e a equipe de solo |
+| 3 | 🛗 Escada rolante | Passageiros subindo e descendo com malas |
+| 4 | 🛍️ Lojas | Brinquedos, café, livros e duty free, com o painel de voos em português e inglês |
+| 5 | 🚶 Ponte de embarque | O túnel até o avião, com as pessoas caminhando e a comissária esperando na porta |
+
+De tempos em tempos toca o aviso do aeroporto, em inglês e português: *"Flight to Paris now boarding at gate B12"*.
 
 ## 🧊 Rotas seguras (e a Antártida)
 Os aviões comerciais escolhem caminhos com **aeroportos por perto**, para o caso de uma emergência. Por isso quase nenhuma rota passa pela Antártida, onde há pouquíssimos aeroportos.
@@ -49,8 +61,17 @@ Os aviões comerciais escolhem caminhos com **aeroportos por perto**, para o cas
 - **Pouso de verdade:** a voz do avião conta a altura até o chão ("One thousand, five hundred… fifty, forty, thirty, twenty, ten… retard"), com o número grande na tela e a tradução embaixo.
 - **Do amanhecer ao pôr do sol:** o céu muda durante o voo, e as luzes da cidade acendem na chegada.
 
+## 🛂 Passaporte mirim
+Cada pouso vale um **carimbo** com a bandeira, o aeroporto, a cidade e a data. Há um espaço para cada destino (com "?" nos que faltam), então a criança quer completar a coleção.
+- A **foto e os dados são inventados** pelo jogo: o rosto é um desenho sorteado, o nome combina um nome comum com uma palavra divertida (*Luna Foguete*, *Theo Cometa*…), e o número e a data de nascimento são aleatórios. **Nada é real**, então não há dados pessoais.
+- 🎲 **Sortear novos dados** troca a foto e a identidade, mantendo os carimbos. 🗑️ **Zerar carimbos** recomeça a coleção.
+- Abra pelo menu inicial ou pelo cartão de chegada.
+
+## 🌅 Dia e noite
+Em **⚙️ Configurações** (ou no menu inicial) escolha o ciclo do dia: *Amanhecer → pôr do sol* (padrão), *Dia → Noite* (anoitece durante a viagem), *Noite → Dia* (amanhece), *Sempre dia* ou *Sempre noite*. De noite aparecem estrelas e Lua, as cidades acendem as luzes e a cabine fica mais escura.
+
 ## 🔊 Som
-Música, motor, avisos e toque na pista são criados pelo próprio código (Web Audio). As falas usam as vozes do próprio navegador (em português e em inglês).
+A música de viagem (alegre, com ritmo, baixo e melodia), o motor, os avisos e o toque na pista são criados pelo próprio código (Web Audio). Em ⚙️ dá para trocar o estilo da música para **Calma**. As falas usam as vozes do próprio navegador (em português e em inglês).
 - Na tela inicial aparece quais vozes foram encontradas. O botão **🔔 Testar voz** confere se estão funcionando.
 - Em **⚙️ Configurações** há volumes separados para a voz, a música e o motor.
 - Os botões **🎵 Música** e **🔊** do topo ligam e desligam o som.
@@ -60,7 +81,7 @@ Vem ligado por padrão: sem tremor de câmera nem balanço, para uma viagem tran
 
 ## ℹ️ Detalhes úteis
 - O globo 3D usa a biblioteca **Three.js**, carregada de `cdnjs.cloudflare.com`. Por isso é preciso estar conectado à internet na primeira abertura.
-- O jogo **não coleta nem guarda dados**. Nada é salvo no aparelho.
+- O jogo **não coleta dados e não envia nada pela internet**. Só o **passaporte** (carimbos e a identidade inventada) fica salvo no próprio navegador do aparelho (`localStorage`). Dá para zerar tudo dentro do passaporte.
 - O mapa usa **contornos simplificados** dos continentes, sem fronteiras de países. Os marcadores e as cidades estão na posição correta.
 - A qualidade das vozes depende do aparelho e do navegador. Se não houver voz em português ou inglês, as legendas continuam na tela.
 - O voo dura cerca de 100 segundos de jogo (a duração real da viagem é só uma comparação mostrada no cartão de chegada).
@@ -73,6 +94,9 @@ O `index.html` é um único arquivo. O script é dividido em seções marcadas c
 - `PG`: os polígonos dos continentes (longitude e latitude).
 - `CNT`: os países citados durante o voo (nome, posição e capital).
 - `T`: a duração do voo, em segundos de jogo.
+- `ML`, `BASS`, `CHD`: a melodia, o baixo e os acordes da música alegre (notas em Hz).
+- `newId`: as listas de nomes, cores e estilos usadas para inventar a identidade do passaporte.
+- `SUN`: como a luz do dia muda durante o voo em cada ciclo.
 - `FT`: os avisos de altura do pouso, em pés, em inglês e português.
 - `lmk`: o desenho dos monumentos de cada país.
 
